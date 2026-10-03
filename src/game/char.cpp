@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "services/EventPublish.h"
 
 #include "common/VnumHelper.h"
 
@@ -1384,6 +1385,7 @@ void CHARACTER::Disconnect(const char * c_pszReason)
 		GetGuild()->LogoutMember(this);
 
 	quest::CQuestManager::instance().LogoutPC(this);
+	game::events::PublishLeaveGame(this);
 
 	if (GetParty())
 		GetParty()->Unlink(this);

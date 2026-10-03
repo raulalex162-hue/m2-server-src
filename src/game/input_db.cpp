@@ -1,4 +1,5 @@
 #include "stdafx.h" 
+#include "services/EventPublish.h"
 #include "constants.h"
 #include "config.h"
 #include "utils.h"
@@ -1022,6 +1023,7 @@ EVENTFUNC(quest_login_event)
 
 		sys_log(0, "QUEST_LOAD: Login pc %d by event", ch->GetPlayerID());
 		quest::CQuestManager::instance().Login(ch->GetPlayerID());
+		game::events::PublishEnterGame(ch);
 		return 0;
 	}
 	else

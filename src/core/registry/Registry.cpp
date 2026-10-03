@@ -1,5 +1,7 @@
 #include "core/registry/Registry.h"
 
+#include "core/events/Bus.h"
+
 namespace core::registry
 {
 	namespace
@@ -138,6 +140,8 @@ namespace core::registry
 	void Registry::StopEntry(Entry& entry, const log::Ctx& ctx)
 	{
 		entry.system->Stop();
+		// Un sistem oprit nu mai primeste evenimente, chiar daca a uitat sa se dezaboneze.
+		events::Global().UnsubscribeOwner(entry.status.name);
 		entry.status.state = State::Disabled;
 		RegistryLog().Info(ctx, "stop {}", entry.status.name);
 	}
