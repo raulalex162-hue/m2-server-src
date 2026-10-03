@@ -22,6 +22,9 @@ namespace
 			core::log::SetSinkForTests(sink);
 		}
 
+		// Canalele create de alte teste nu trebuie sa scrie in acest string dupa ce dispare.
+		~CapturedLog() { core::log::SetSinkForTests(nullptr); }
+
 		std::string Text() { sink->flush(); return out.str(); }
 	};
 }

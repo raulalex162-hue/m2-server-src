@@ -81,5 +81,6 @@ namespace core::log
 	Level ParseLevel(std::string_view text, Level fallback);
 
 	// Doar pentru teste: destinatia folosita de canalele create de acum inainte.
+	// nullptr revine la fisierul implicit systems.log.
 	void SetSinkForTests(spdlog::sink_ptr sink);
 }
