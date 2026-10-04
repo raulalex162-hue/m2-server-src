@@ -364,8 +364,6 @@ int main(int argc, char **argv)
 	Blend_Item_init();
 	ani_init();
 
-	game::systems::StartAll();
-
 	while (idle());
 
 	sys_log(0, "<shutdown> Starting...");

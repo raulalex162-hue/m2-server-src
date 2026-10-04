@@ -6,7 +6,8 @@
 
 namespace game::systems
 {
-	// Apelat din main() inainte de bucla principala. Nu face nimic pe core-ul de auth.
+	// Apelat la finalul CInputDB::Boot, dupa ce toate datele de joc (item_proto, mob_proto, harti)
+	// au sosit de la db. O singura data; un al doilea apel nu face nimic. Nu porneste pe core-ul de auth.
 	void StartAll();
 
 	// Apelat din main() la shutdown, dupa deconectarea jucatorilor si inainte de flush-ul catre db.

@@ -1,4 +1,5 @@
 #include "stdafx.h" 
+#include "systems/Systems.h"
 #include "services/EventPublish.h"
 #include "constants.h"
 #include "config.h"
@@ -966,6 +967,9 @@ void CInputDB::Boot(const char* data)
 
 	// castle_boot
 	castle_boot();
+
+	// Sistemele noi pornesc abia acum, cand toate datele de joc (item_proto, mob_proto, harti) sunt incarcate.
+	game::systems::StartAll();
 }
 
 EVENTINFO(quest_login_event_info)

@@ -37,6 +37,12 @@ namespace game::systems
 	void StartAll()
 	{
 		const core::log::Ctx ctx{ core::log::NewTrace(), 0 };
+		if (g_started)
+		{
+			// DG::BOOT poate veni din nou (ex. dupa o reconectare la db): sistemele raman cum sunt.
+			core::log::Get("REGISTRY").Warn(ctx, "StartAll apelat din nou; sistemele sunt deja pornite");
+			return;
+		}
 		if (g_bAuthServer)
 		{
 			core::log::Get("REGISTRY").Info(ctx, "core de auth: sistemele nu pornesc aici");
