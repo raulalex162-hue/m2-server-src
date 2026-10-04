@@ -55,9 +55,13 @@ namespace core::registry
 		// Faza 2b: config-ul de rezerva e aruncat.
 		virtual void Discard() = 0;
 
-		virtual void Start() = 0;
-		virtual void Stop() = 0;
-		virtual void ConfigReloaded() = 0;
+		// ctx = acelasi trace id pe care il foloseste registry-ul pentru actiunea respectiva.
+		virtual void Start(const log::Ctx& ctx) = 0;
+		virtual void Stop(const log::Ctx& ctx) = 0;
+		virtual void ConfigReloaded(const log::Ctx& ctx) = 0;
+
+		// Pentru /sysinfo: cateva linii despre starea interna (contoare, setari active).
+		virtual void Describe(std::vector<std::string>& lines) const { (void)lines; }
 	};
 
 	// Baza pentru un sistem cu config-ul de tip TConfig.
@@ -73,9 +77,9 @@ namespace core::registry
 		void Commit() final { m_active = m_staged; }
 		void Discard() final { m_staged = TConfig{}; }
 
-		void Start() final { OnStart(); }
-		void Stop() final { OnStop(); }
-		void ConfigReloaded() final { OnConfigReloaded(); }
+		void Start(const log::Ctx& ctx) final { m_lifecycle = ctx; OnStart(); }
+		void Stop(const log::Ctx& ctx) final { m_lifecycle = ctx; OnStop(); }
+		void ConfigReloaded(const log::Ctx& ctx) final { m_lifecycle = ctx; OnConfigReloaded(); }
 
 	protected:
 		// Config-ul activ, validat. Sistemul il citeste de aici de fiecare data.
@@ -83,6 +87,10 @@ namespace core::registry
 
 		// Canalul de log al sistemului.
 		log::Channel& Log() const { return log::Get(ChannelName(Name())); }
+
+		// Contextul ultimei actiuni a registry-ului (start / stop / reload), pentru log-urile
+		// din OnStart, OnStop si OnConfigReloaded: liniile lor au acelasi trace id ca ale registry-ului.
+		const log::Ctx& LifecycleCtx() const { return m_lifecycle; }
 
 		virtual void Read(config::Reader& root, TConfig& out) = 0;
 		virtual void OnStart() {}
@@ -92,6 +100,7 @@ namespace core::registry
 	private:
 		TConfig m_active{};
 		TConfig m_staged{};
+		log::Ctx m_lifecycle{};
 	};
 
 	// Ce afiseaza /sysinfo despre un sistem.
@@ -129,6 +138,12 @@ namespace core::registry
 
 		std::vector<Status> List() const;
 		const Status* Find(std::string_view name) const;
+
+		// /sysdebug: schimba nivelul de log al unui sistem pana la urmatorul reload. false = nume necunoscut.
+		bool SetLogLevel(std::string_view name, log::Level level);
+
+		// /sysinfo <sistem>: liniile din ISystem::Describe. Gol daca numele e necunoscut.
+		std::vector<std::string> Describe(std::string_view name) const;
 
 	private:
 		struct Entry

@@ -11,8 +11,10 @@
 
 #include <chrono>
 #include <cstdint>
+#include <string>
 #include <string_view>
 #include <unordered_map>
+#include <vector>
 
 #include "core/registry/Registry.h"
 
@@ -28,6 +30,7 @@ namespace game::systems::heartbeat
 	{
 	public:
 		std::string_view Name() const override { return "heartbeat"; }
+		void Describe(std::vector<std::string>& lines) const override;
 
 	protected:
 		void Read(core::config::Reader& root, HeartbeatConfig& out) override;

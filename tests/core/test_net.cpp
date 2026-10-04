@@ -154,3 +154,15 @@ TEST_CASE("net: registry-ul scoate automat rutele unui sistem oprit")
 	CHECK_FALSE(core::net::Global().Has(77, 1));
 	fs::remove_all(dir);
 }
+
+TEST_CASE("net: OwnerCount numara mesajele unui sistem")
+{
+	Router router;
+	auto noop = [](uint32_t, Body, const core::log::Ctx&) {};
+	router.Register(5, 1, "a", noop);
+	router.Register(5, 2, "a", noop);
+	router.Register(6, 1, "b", noop);
+	CHECK(router.OwnerCount("a") == 2);
+	CHECK(router.OwnerCount("b") == 1);
+	CHECK(router.OwnerCount("c") == 0);
+}

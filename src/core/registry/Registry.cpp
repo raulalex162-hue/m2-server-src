@@ -133,14 +133,14 @@ namespace core::registry
 
 	void Registry::StartEntry(Entry& entry, const log::Ctx& ctx)
 	{
-		entry.system->Start();
+		entry.system->Start(ctx);
 		entry.status.state = State::Running;
 		RegistryLog().Info(ctx, "start {}", entry.status.name);
 	}
 
 	void Registry::StopEntry(Entry& entry, const log::Ctx& ctx)
 	{
-		entry.system->Stop();
+		entry.system->Stop(ctx);
 		// Un sistem oprit nu mai primeste evenimente si mesaje, chiar daca a uitat sa se dezaboneze.
 		events::Global().UnsubscribeOwner(entry.status.name);
 		net::Global().UnregisterOwner(entry.status.name);
@@ -224,7 +224,7 @@ namespace core::registry
 		else if (!running && common.enabled)
 			StartEntry(*entry, ctx);
 		else if (running)
-			entry->system->ConfigReloaded();
+			entry->system->ConfigReloaded(ctx);
 		else
 			entry->status.state = State::Disabled;
 
@@ -232,6 +232,30 @@ namespace core::registry
 		if (errorOut)
 			errorOut->clear();
 		return true;
+	}
+
+	bool Registry::SetLogLevel(std::string_view name, log::Level level)
+	{
+		Entry* entry = FindEntry(name);
+		if (!entry)
+			return false;
+		entry->status.logLevel = level;
+		log::Get(ChannelName(entry->status.name)).SetLevel(level);
+		return true;
+	}
+
+	std::vector<std::string> Registry::Describe(std::string_view name) const
+	{
+		std::vector<std::string> lines;
+		for (const auto& entry : m_entries)
+		{
+			if (entry.status.name == name)
+			{
+				entry.system->Describe(lines);
+				break;
+			}
+		}
+		return lines;
 	}
 
 	Registry& Global()

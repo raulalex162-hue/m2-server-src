@@ -64,6 +64,8 @@ namespace core::net
 		Result Dispatch(uint32_t pid, Body payload);
 
 		size_t Count() const { return m_routes.size(); }
+		// Cate mesaje are inregistrate un sistem (pentru /sysinfo).
+		size_t OwnerCount(std::string_view owner) const;
 		bool Has(uint16_t system, uint16_t type) const;
 
 	private:

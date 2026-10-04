@@ -92,19 +92,28 @@ namespace game::systems::heartbeat
 			},
 			256);
 
-		Log().Info({}, "pornit: log_enter_leave={} min_ping_interval_ms={} protocol={}",
+		Log().Info(LifecycleCtx(), "pornit: log_enter_leave={} min_ping_interval_ms={} protocol={}",
 			Config().logEnterLeave, Config().minPingIntervalMs, m2::kProtocolHash);
 	}
 
 	void Heartbeat::OnStop()
 	{
-		Log().Info({}, "oprit: pings={} refuzate={}", m_pings, m_rejected);
+		Log().Info(LifecycleCtx(), "oprit: pings={} refuzate={}", m_pings, m_rejected);
 		m_lastPing.clear();
+	}
+
+	void Heartbeat::Describe(std::vector<std::string>& lines) const
+	{
+		lines.push_back("pings acceptate: " + std::to_string(m_pings) + ", refuzate: " + std::to_string(m_rejected));
+		lines.push_back("jucatori cu Ping recent: " + std::to_string(m_lastPing.size()));
+		lines.push_back("log_enter_leave=" + std::string(Config().logEnterLeave ? "true" : "false")
+			+ " min_ping_interval_ms=" + std::to_string(Config().minPingIntervalMs));
+		lines.push_back(std::string("protocol: ") + m2::kProtocolHash);
 	}
 
 	void Heartbeat::OnConfigReloaded()
 	{
-		Log().Info({}, "config reincarcat: log_enter_leave={} min_ping_interval_ms={}",
+		Log().Info(LifecycleCtx(), "config reincarcat: log_enter_leave={} min_ping_interval_ms={}",
 			Config().logEnterLeave, Config().minPingIntervalMs);
 	}
 }

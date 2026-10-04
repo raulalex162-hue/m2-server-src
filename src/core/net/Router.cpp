@@ -63,6 +63,15 @@ namespace core::net
 		}
 	}
 
+	size_t Router::OwnerCount(std::string_view owner) const
+	{
+		size_t n = 0;
+		for (const auto& [key, route] : m_routes)
+			if (route.owner == owner)
+				++n;
+		return n;
+	}
+
 	bool Router::Has(uint16_t system, uint16_t type) const
 	{
 		return m_routes.count(std::make_pair(system, type)) != 0;

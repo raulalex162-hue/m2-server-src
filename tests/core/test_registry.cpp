@@ -264,3 +264,63 @@ TEST_CASE("registry: reload pe un nume necunoscut intoarce false")
 	CHECK_FALSE(registry.Reload("nu_exista", &error));
 	CHECK(error.find("necunoscut") != std::string::npos);
 }
+
+namespace
+{
+	// Sistem care isi raporteaza starea si contextul primit la pornire.
+	class DescribedSystem : public core::registry::System<DemoConfig>
+	{
+	public:
+		std::string_view Name() const override { return "described"; }
+		void Describe(std::vector<std::string>& lines) const override
+		{
+			lines.push_back("value=" + std::to_string(Config().value));
+			lines.push_back("start_trace=" + std::to_string(m_startTrace));
+		}
+
+	protected:
+		void Read(core::config::Reader& root, DemoConfig& out) override
+		{
+			out.value = static_cast<int>(root.RequireInt("value", 1, 10));
+		}
+		void OnStart() override { m_startTrace = LifecycleCtx().trace.value; }
+
+	private:
+		uint32_t m_startTrace = 0;
+	};
+}
+
+TEST_CASE("registry: OnStart primeste trace id-ul registry-ului, Describe raporteaza starea")
+{
+	ConfigDir dir;
+	dir.Write("described", R"({ "enabled": true, "value": 6 })");
+	Registry registry(dir.PathFor());
+	registry.Register(std::make_unique<DescribedSystem>());
+	registry.StartAll();
+
+	const auto lines = registry.Describe("described");
+	REQUIRE(lines.size() == 2);
+	CHECK(lines[0] == "value=6");
+	CHECK(lines[1] != "start_trace=0");
+	CHECK(registry.Describe("nu_exista").empty());
+	registry.StopAll();
+}
+
+TEST_CASE("registry: SetLogLevel schimba nivelul canalului pana la urmatorul reload")
+{
+	ConfigDir dir;
+	dir.Write("leveltwo", R"({ "enabled": true, "log_level": "info", "value": 1 })");
+	Counters c;
+	Registry registry(dir.PathFor());
+	registry.Register(std::make_unique<DemoSystem>("leveltwo", c));
+	registry.StartAll();
+
+	CHECK(registry.SetLogLevel("leveltwo", core::log::Level::Debug));
+	CHECK(core::log::Get("LEVELTWO").GetLevel() == core::log::Level::Debug);
+	CHECK(registry.Find("leveltwo")->logLevel == core::log::Level::Debug);
+	CHECK_FALSE(registry.SetLogLevel("nu_exista", core::log::Level::Debug));
+
+	CHECK(registry.Reload("leveltwo"));
+	CHECK(core::log::Get("LEVELTWO").GetLevel() == core::log::Level::Info);
+	registry.StopAll();
+}

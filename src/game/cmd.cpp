@@ -80,6 +80,9 @@ ACMD(do_qf);
 ACMD(do_clear_quest);
 ACMD(do_book);
 ACMD(do_reload);
+ACMD(do_sysinfo);   // services/SystemCommands.cpp
+ACMD(do_sysreload);
+ACMD(do_sysdebug);
 ACMD(do_war);
 ACMD(do_nowar);
 ACMD(do_setskill);
@@ -340,6 +343,9 @@ struct command_info cmd_info[] =
 	{ "setskillother",	do_setskillother,	0,			POS_DEAD,	GM_HIGH_WIZARD	},
 	{ "setskillpoint",  do_set_skill_point,	0,			POS_DEAD,	GM_IMPLEMENTOR	},
 	{ "reload",		do_reload,		0,			POS_DEAD,	GM_IMPLEMENTOR	},
+	{ "sysinfo",		do_sysinfo,		0,			POS_DEAD,	GM_IMPLEMENTOR	},
+	{ "sysreload",	do_sysreload,	0,			POS_DEAD,	GM_IMPLEMENTOR	},
+	{ "sysdebug",		do_sysdebug,	0,			POS_DEAD,	GM_IMPLEMENTOR	},
 	{ "cooltime",	do_cooltime,		0,			POS_DEAD,	GM_HIGH_WIZARD	},
 
 	{ "gwlist",		do_gwlist,		0,			POS_DEAD,	GM_LOW_WIZARD	},
