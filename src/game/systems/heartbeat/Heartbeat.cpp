@@ -14,10 +14,10 @@
 #include "m2/ProtocolHash.h"
 
 // Headerele Protobuf se includ mereu intre ProtoBegin.h si ProtoEnd.h (vezi ProtoBegin.h).
-#include "../../services/ProtoBegin.h"
+#include "ProtoBegin.h"
 #include "m2/heartbeat.pb.h"
 #include "m2/system_ids.pb.h"
-#include "../../services/ProtoEnd.h"
+#include "ProtoEnd.h"
 
 namespace game::systems::heartbeat
 {

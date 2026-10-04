@@ -156,6 +156,7 @@ class CClientManager : public CNetBase, public singleton<CClientManager>
 	Func		for_each_peer(Func f);
 
 	CPeer *		GetAnyPeer();
+	CPeer *		FindPeer(IDENT ident) { return GetPeer(ident); } // db/systemdata
 
 	void			ForwardPacket(uint16_t wHeader, const void* data, int size, BYTE bChannel = 0, CPeer * except = NULL);
 
