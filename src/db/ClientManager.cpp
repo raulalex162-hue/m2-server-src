@@ -10,6 +10,7 @@
 #include "Config.h"
 #include "DBManager.h"
 #include "QID.h"
+#include "systemdata/SystemData.h"
 #include "GuildManager.h"
 #include "PrivManager.h"
 #include "MoneyLog.h"
@@ -2097,6 +2098,10 @@ void CClientManager::ProcessPackets(CPeer * peer)
 				QUERY_PLAYER_SAVE(peer, dwHandle, (TPlayerTable *) data);
 				break;
 
+				case GD::SYSTEM_DATA:
+					db::systemdata::OnPacket(peer, data, dwLength);
+				break;
+
 			case GD::PLAYER_CREATE:
 				sys_log(0, "GD::PLAYER_CREATE (handle: %d length: %d)", dwHandle, dwLength);
 				__QUERY_PLAYER_CREATE(peer, dwHandle, (TPlayerCreatePacket *) data);
@@ -2497,6 +2502,11 @@ int CClientManager::AnalyzeQueryResult(SQLMsg * msg)
 			delete qi;
 			return true;
 
+			case QID_SYSTEM_DATA_LOAD:
+				db::systemdata::OnLoadResult(msg, qi);
+			delete qi;
+			return true;
+
 		case QID_GUILD_RANKING:
 			CGuildManager::instance().ResultRanking(msg->Get()->pSQLResult);
 			break;
@@ -2763,6 +2773,7 @@ int CClientManager::Process()
 		{
 			// 유니크 아이템을 위한 시간을 보낸다.
 			CClientManager::instance().SendTime();
+			db::systemdata::Update();
 		}
 
 		if (!(thecore_heart->pulse % (thecore_heart->passes_per_sec * 3600)))	// 한시간에 한번

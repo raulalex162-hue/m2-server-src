@@ -1,0 +1,18 @@
+// Identificatorii datelor per jucator (PlayerSystemData) care apartin doar serverului.
+//
+// Regula pentru system_id din player_system_data:
+//   1 .. 999    = aceleasi numere ca m2::SystemId (proto/m2/system_ids.proto), pentru sistemele
+//                 care au si mesaje cu clientul (ex. heartbeat = 1)
+//   1000 ..     = date doar ale serverului, definite aici; adaugarea lor nu schimba hash-ul protocolului
+// Un numar odata folosit nu se schimba si nu se refoloseste.
+syntax = "proto3";
+
+package m2.server;
+
+option optimize_for = LITE_RUNTIME;
+
+enum StorageId
+{
+	STORAGE_ID_UNSPECIFIED = 0;
+	STORAGE_ID_REWARD_MAILBOX = 1001;
+}

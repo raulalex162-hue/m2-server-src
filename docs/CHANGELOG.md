@@ -168,6 +168,93 @@ Repository-uri: `m2-server-src` (sursa serverului), `m2-server` (fișierele serv
 
 ---
 
+## Faza 1 – servicii comune
+
+### MODIFICARE #015
+- Sistem: CORE / storage (PlayerSystemData, logica)
+- Fișier(e): `src/core/storage/SystemDataCache.*`, `PlayerDataStore.*`, `proto/server/system_data.proto`, `proto/CMakeLists.txt`, `tests/core/test_storage.cpp`; `sql/migrations/001_player_system_data.sql` (m2-server)
+- Problemă: sistemele nu aveau unde să-și țină datele per jucător; o scriere directă din game în MariaDB ar fi permis la warp citirea unor date vechi (ex. o zi de daily reward revendicată de două ori)
+- Soluție: db e singurul proprietar al datelor, cu un cache mereu cel mai nou; game nu poate scrie înainte să primească datele; un blob Protobuf per (pid, sistem); mesajele game ↔ db în `proto/server/`, în afara hash-ului protocolului
+- Impact: niciunul asupra jocului (logică pură)
+- Test efectuat: `core_tests` (65), inclusiv warp cu DB lentă și salvare în timpul citirii
+- Rezultat: OK
+- Commit: `1e76683`
+
+### MODIFICARE #016
+- Sistem: db / systemdata
+- Fișier(e): `src/db/systemdata/*`, `src/db/ClientManager.cpp`, `ClientManager.h`, `QID.h`, `CMakeLists.txt`, `src/common/packet_headers.h`, `src/common/ProtoBegin.h`, `ProtoEnd.h`
+- Problemă: db nu știa de datele sistemelor; `GetPeer` era privată; ProtoBegin/End erau doar în game
+- Soluție: `GD::SYSTEM_DATA` (0x90C0) / `DG::SYSTEM_DATA` (0x91C0), citire asincronă, scriere imediată în hex (fără escapare), răspuns doar dacă core-ul mai e conectat, curățarea cache-ului după 30 de minute de inactivitate; `FindPeer()` public; ProtoBegin/End mutate în `common`
+- Impact: 11 linii în `ClientManager.cpp`, câte una în `ClientManager.h`, `QID.h`, 2 în `packet_headers.h`, 2 în CMake
+- Test efectuat: build, `ldd`, server pornit
+- Rezultat: OK
+- Commit: `9095ce1`
+
+### MODIFICARE #017
+- Sistem: game / playerdata
+- Fișier(e): `src/game/services/PlayerData.*`, `EventPublish.cpp`, `src/game/systems/Systems.cpp`, `src/core/events/GameEvents.h`, `src/game/input.h`, `src/game/input_db.cpp`; `share/conf/systems/player_data.json`
+- Problemă: game trebuia să ceară și să trimită datele în ordinea corectă față de sisteme
+- Soluție: cerere la intrare (înainte de `EnterGame`), salvare la ieșire (după `LeaveGame`, deci sistemele mai pot scrie), salvare periodică la 60 s și la oprire; evenimentul nou `SystemDataReady`; `Load`/`Store` tipizate cu Protobuf
+- Impact: 2 linii în codul de bază
+- Test efectuat: `/sysinfo player_data`, cereri și răspunsuri la relog
+- Rezultat: OK
+- Commit: `8926b76`
+
+### MODIFICARE #018
+- Sistem: heartbeat (test pentru PlayerSystemData)
+- Fișier(e): `proto/server/heartbeat_state.proto`, `src/game/systems/heartbeat/*`
+- Problemă: PlayerSystemData nu fusese dovedit în joc
+- Soluție: heartbeat salvează per jucător `total_pings`, `last_ping_ms`, `entries`
+- Test efectuat: relog (`entries=2`), warp pe 3 core-uri (`total_pings` 6 → 7 → 8, `entries` 10 → 11 → 12), rândul în MariaDB (11 octeți), salvare periodică în timpul sesiunii
+- Rezultat: OK
+- Commit: `1c390a8`
+
+### MODIFICARE #019
+- Sistem: CORE / reward (logica)
+- Fișier(e): `src/core/reward/Reward.*`, `tests/core/test_reward.cpp`
+- Problemă: m2dev pierde recompense în tăcere: cu inventarul plin itemul cade pe jos și dispare după 60 s; yang-ul peste 2 miliarde e refuzat doar în `syserr`
+- Soluție: pachet de recompensă, livrare „cât încape” cu restul păstrat, cutie de recompense cu limită, citire din config cu validator de vnum
+- Impact: niciunul asupra jocului (logică pură)
+- Test efectuat: `core_tests` (73)
+- Rezultat: OK
+
+### MODIFICARE #020
+- Sistem: game / RewardService
+- Fișier(e): `src/game/services/Reward.*`, `RewardCommands.cpp`, `proto/server/reward_state.proto`, `proto/server/storage_ids.proto`, `src/game/systems/Systems.cpp`, `src/game/cmd.cpp`; `share/conf/systems/reward.json`
+- Problemă: sistemele aveau nevoie de un singur drum, sigur, pentru recompense
+- Soluție: itemele se dau doar după ce există o celulă liberă (nu mai ajung pe jos); restul intră în cutia salvată imediat prin PlayerSystemData; livrare automată la intrare; `/reward` (jucători, pauză 3 s) și `/reward_test` (GM); vnum-urile din config verificate în `item_proto`; refuz înainte de a da ceva dacă restul nu poate fi păstrat
+- Regulă nouă: identificatorii de date per jucător sub 1000 = sistemele din protocolul cu clientul; de la 1000 = doar server (cutia = 1001)
+- Impact: 5 linii în `cmd.cpp` (`reward` înaintea lui `reward_test`, pentru că m2dev potrivește comenzile după prefix)
+- Test efectuat: livrare directă, vnum inexistent refuzat, yang peste limită în cutie, cutie păstrată la relog și la restart, rândul 1001 în MariaDB
+- Rezultat: OK
+
+### MODIFICARE #021
+- Sistem: CORE / reward + game / RewardService (la cererea lui Raul)
+- Fișier(e): `src/core/reward/Reward.*`, `src/game/services/Reward.cpp`, `tests/core/test_reward.cpp`
+- Problemă: yang-ul din cutie se dădea doar întreg; cu 1,5 miliarde și 1 miliard în cutie nu se dădea nimic
+- Soluție: yang livrat parțial, până la limită; în cutie rămâne exact diferența; `IReceiver::CanReceiveGold` înlocuit cu `GoldCapacity`
+- Test efectuat: `core_tests` (75); în joc: după restart, livrare automată de 11 teancuri și 644.809.615 yang, apoi încă 864.000 yang după cheltuială
+- Rezultat: OK
+
+### MODIFICARE #022
+- Sistem: CORE / time + scheduler
+- Fișier(e): `src/core/time/Calendar.*`, `src/core/scheduler/Scheduler.*`, `src/core/registry/Registry.cpp`, `tests/core/test_time.cpp`
+- Problemă: sistemele zilnice aveau nevoie de o „zi de joc” sigură și de sarcini programate
+- Soluție: `DayKey` / `WeekKey` / `NextReset` în ora locală (cu ora de vară); planificator `Every` / `DailyAt` fără rulări recuperate în avalanșă; registry-ul anulează sarcinile unui sistem oprit
+- Regulă: ce nu are voie să rateze o zi folosește `DayKey`, nu un eveniment de reset
+- Test efectuat: `core_tests` (86), inclusiv ziua de 23 de ore din 29 martie 2026
+- Rezultat: OK
+
+### MODIFICARE #023
+- Sistem: game / game_time
+- Fișier(e): `src/game/services/GameTime.*`, `src/game/systems/Systems.cpp`, `src/game/systems/heartbeat/*`; `share/conf/systems/game_time.json`
+- Problemă: planificatorul trebuia „bătut” în joc, iar ora de reset trebuia să fie comună tuturor sistemelor
+- Soluție: sistemul `game_time` (primul din listă) bate planificatorul o dată pe secundă și ține `day_reset`; heartbeat are o sarcină pe minut și una zilnică, de test
+- Test efectuat: `/sysinfo game_time` cu ora EEST; reset de test la 18:27 → `zi noua de joc` la 18:27:00 pe toate cele 4 core-uri; la un start după ora de reset nu s-a declanșat o zi falsă
+- Rezultat: OK
+
+---
+
 ## Probleme cunoscute
 
 | Problemă | Când se rezolvă | Până atunci |
@@ -175,3 +262,8 @@ Repository-uri: `m2-server-src` (sursa serverului), `m2-server` (fișierele serv
 | `/sysreload` acționează doar pe core-ul curent | Faza 5, sau mai devreme dacă devine incomod (cere un pachet P2P) | reload pe fiecare core sau restart |
 | Clientul are un singur sistem în `Dispatch` | începutul Fazei 2, odată cu daily reward | nimic; cu un singur sistem e corect |
 | `LNK4098` (`LIBCMT`) în build-ul Debug al clientului | doar dacă apar crash-uri numai în Debug | se verifică dacă apare și în Release |
+| Textele pentru jucători (`[reward] ...`) sunt scrise în cod | Faza 2, odată cu primele ferestre din client | rămân în română, fără diacritice |
+| Pauza de 3 s de la `/reward` e implementată local în comandă | când construim `Guard` (anti-abuz comun) | funcționează, dar nu e refolosibilă |
+| Schimbarea `day_reset` cu `/sysreload` nu mută sarcinile `DailyAt` deja programate | doar dacă devine necesar | restart după schimbarea orei |
+| `CurrencyService` amânat | la primul sistem care are nevoie de o monedă nouă | yang-ul îl tratează RewardService |
+| Inventarul special (materiale, pietre, cufere) | primul sistem al Fazei 4 | inventarul normal |

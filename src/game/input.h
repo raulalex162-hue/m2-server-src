@@ -269,6 +269,7 @@ protected:
 	template<class T, void (CInputDB::*fn)(T*)>
 	int TypedHandler(LPDESC, const char* p) { (this->*fn)((T*)p); return 0; }
 	int HandleLoginSuccess(LPDESC, const char*);
+	int HandleSystemData(LPDESC, const char*); // services/PlayerData.cpp
 	int HandleLoginNotExist(LPDESC, const char*);
 	int HandleLoginWrongPasswd(LPDESC, const char*);
 	int HandlePlayerCreateFailed(LPDESC, const char*);

@@ -44,8 +44,17 @@ namespace core::events
 		bool inDungeon = false;
 	};
 
+	// Datele per jucator ale sistemelor (PlayerSystemData) au sosit de la db pe acest core.
+	// Abia de acum un sistem poate citi si scrie datele jucatorului (game::playerdata::Load/Store).
+	// Vine dupa EnterGame (de obicei la cateva milisecunde), la fiecare intrare pe un core.
+	struct SystemDataReady
+	{
+		uint32_t pid = 0;
+	};
+
 	// Numele evenimentelor, pentru log.
 	constexpr const char* NameOf(const EnterGame&) { return "EnterGame"; }
 	constexpr const char* NameOf(const LeaveGame&) { return "LeaveGame"; }
 	constexpr const char* NameOf(const MobKill&) { return "MobKill"; }
+	constexpr const char* NameOf(const SystemDataReady&) { return "SystemDataReady"; }
 }

@@ -10,6 +10,8 @@ target_link_libraries(db
 	libpoly 
 	libsql 
 	libthecore
+	m2core
+	m2proto
 
 	# external
 	mariadbclient

@@ -2014,6 +2014,7 @@ void CInputDB::RegisterHandlers()
 	m_handlers[DG::BOOT]                       = &CInputDB::DataHandler<&CInputDB::Boot>;
 	m_handlers[DG::MAP_LOCATIONS]              = &CInputDB::DataHandler<&CInputDB::MapLocations>;
 	m_handlers[DG::P2P]                        = &CInputDB::DataHandler<&CInputDB::P2P>;
+	m_handlers[DG::SYSTEM_DATA]                = &CInputDB::HandleSystemData;
 	m_handlers[DG::GUILD_SKILL_UPDATE]         = &CInputDB::DataHandler<&CInputDB::GuildSkillUpdate>;
 	m_handlers[DG::GUILD_LOAD]                 = &CInputDB::DataHandler<&CInputDB::GuildLoad>;
 	m_handlers[DG::GUILD_EXP_UPDATE]           = &CInputDB::DataHandler<&CInputDB::GuildExpUpdate>;

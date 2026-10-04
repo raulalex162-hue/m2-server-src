@@ -446,6 +446,7 @@ namespace GD
     constexpr uint16_t DELETE_AWARDID        = 0x905A;
     constexpr uint16_t UPDATE_CHANNELSTATUS  = 0x905B;
     constexpr uint16_t REQUEST_CHANNELSTATUS = 0x905C;
+    constexpr uint16_t SYSTEM_DATA           = 0x90C0; // PlayerSystemData (db/systemdata)
 
     constexpr uint16_t SETUP                 = 0x90FF;
 }
@@ -559,6 +560,7 @@ namespace DG
 
     constexpr uint16_t MAP_LOCATIONS         = 0x91FE;
     constexpr uint16_t P2P                   = 0x91FF;
+    constexpr uint16_t SYSTEM_DATA           = 0x91C0; // PlayerSystemData (db/systemdata)
 }
 
 // ============================================================================

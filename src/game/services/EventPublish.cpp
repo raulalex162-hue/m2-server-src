@@ -8,6 +8,8 @@
 #include "core/events/Bus.h"
 #include "core/events/GameEvents.h"
 
+#include "PlayerData.h"
+
 namespace game::events
 {
 	void PublishEnterGame(CHARACTER* ch)
@@ -22,6 +24,8 @@ namespace game::events
 		e.level = static_cast<uint32_t>(ch->GetLevel());
 		e.empire = ch->GetEmpire();
 
+		// Intai cererea de date (sosesc ca SystemDataReady), apoi evenimentul pentru sisteme.
+		game::playerdata::OnEnter(e.pid);
 		core::events::Global().Publish(e, core::log::Ctx{ core::log::NewTrace(), e.pid });
 	}
 
@@ -34,7 +38,9 @@ namespace game::events
 		e.pid = ch->GetPlayerID();
 		e.mapIndex = static_cast<int32_t>(ch->GetMapIndex());
 
+		// Intai evenimentul (sistemele mai pot salva date), apoi trimiterea datelor la db.
 		core::events::Global().Publish(e, core::log::Ctx{ core::log::NewTrace(), e.pid });
+		game::playerdata::OnLeave(e.pid);
 	}
 
 	void PublishMobKill(CHARACTER* killer, CHARACTER* mob)
