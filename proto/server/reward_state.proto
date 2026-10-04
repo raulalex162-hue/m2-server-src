@@ -1,0 +1,26 @@
+// Cutia de recompense in asteptare a unui jucator (RewardService), salvata prin PlayerSystemData
+// sub m2::server::STORAGE_ID_REWARD_MAILBOX.
+syntax = "proto3";
+
+package m2.server.reward;
+
+option optimize_for = LITE_RUNTIME;
+
+message Item
+{
+	uint32 vnum = 1;
+	uint32 count = 2;
+}
+
+message Pending
+{
+	string source = 1;      // sistemul care a dat recompensa
+	repeated Item items = 2;
+	uint64 gold = 3;
+	uint64 created_ms = 4;  // ora serverului la intrarea in cutie
+}
+
+message Mailbox
+{
+	repeated Pending pending = 1;
+}

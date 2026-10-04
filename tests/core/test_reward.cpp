@@ -25,7 +25,7 @@ namespace
 
 		bool CanReceiveItem(const Item&) override { return freeSlots > 0; }
 		void GiveItem(const Item& item) override { --freeSlots; received.push_back(item); }
-		bool CanReceiveGold(uint64_t amount) override { return gold + amount <= goldLimit; }
+		uint64_t GoldCapacity() override { return gold >= goldLimit ? 0 : goldLimit - gold; }
 		void GiveGold(uint64_t amount) override { gold += amount; }
 	};
 
@@ -63,14 +63,44 @@ TEST_CASE("reward: ce nu incape ramane, in ordine, iar yang-ul se da separat")
 	CHECK(d.remaining.gold == 0);
 }
 
-TEST_CASE("reward: yang-ul peste limita nu se pierde, ramane in asteptare")
+TEST_CASE("reward: yang-ul se da pana la limita, iar diferenta ramane in asteptare")
 {
 	FakeInventory inv;
 	inv.freeSlots = 5;
-	inv.gold = 1999999000;
+	inv.gold = core::reward::kMaxGold - 1000;
 	const auto d = Deliver(inv, Make({}, 5000));
-	CHECK(inv.gold == 1999999000);
+	CHECK(inv.gold == core::reward::kMaxGold);
+	CHECK(d.delivered.gold == 1000);
+	CHECK(d.remaining.gold == 4000);
+}
+
+TEST_CASE("reward: la limita exacta, tot yang-ul ramane in asteptare")
+{
+	FakeInventory inv;
+	inv.gold = core::reward::kMaxGold;
+	const auto d = Deliver(inv, Make({}, 5000));
+	CHECK(d.delivered.gold == 0);
 	CHECK(d.remaining.gold == 5000);
+}
+
+TEST_CASE("mailbox: cutia da tot ce incape, din toate intrarile, si pastreaza exact restul")
+{
+	Mailbox box(10);
+	box.Add(Pending{ "a", Make({ { 1, 1 }, { 2, 1 } }, 3000), 1 });
+	box.Add(Pending{ "b", Make({ { 3, 1 } }, 2000), 2 });
+
+	FakeInventory inv;
+	inv.freeSlots = 2;
+	inv.gold = core::reward::kMaxGold - 4000;
+	const Reward got = box.DeliverAll(inv);
+
+	CHECK(got.items.size() == 2);       // itemele 1 si 2 au incaput, 3 nu
+	CHECK(got.gold == 4000);            // 3000 din "a" + 1000 din "b"
+	REQUIRE(box.Size() == 1);           // "a" a iesit complet din cutie
+	CHECK(box.Entries()[0].source == "b");
+	REQUIRE(box.Entries()[0].reward.items.size() == 1);
+	CHECK(box.Entries()[0].reward.items[0].vnum == 3);
+	CHECK(box.Entries()[0].reward.gold == 1000);
 }
 
 TEST_CASE("mailbox: livrarea partiala pastreaza restul, cea completa scoate intrarea")

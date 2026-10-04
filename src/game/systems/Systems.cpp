@@ -10,6 +10,7 @@
 #include "core/registry/Registry.h"
 
 #include "../services/PlayerData.h"
+#include "../services/Reward.h"
 #include "heartbeat/Heartbeat.h"
 
 namespace game::systems
@@ -24,6 +25,7 @@ namespace game::systems
 			// player_data e primul: porneste inaintea sistemelor care il folosesc si se opreste
 			// dupa ele, deci salveaza si ce au scris ele la oprire.
 			registry.Register(game::playerdata::CreateSystem());
+			registry.Register(game::reward::CreateSystem());
 			registry.Register(std::make_unique<heartbeat::Heartbeat>());
 		}
 	}

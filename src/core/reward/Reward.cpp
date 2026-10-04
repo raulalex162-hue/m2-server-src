@@ -22,15 +22,12 @@ namespace core::reward
 
 		if (reward.gold > 0)
 		{
-			if (receiver.CanReceiveGold(reward.gold))
-			{
-				receiver.GiveGold(reward.gold);
-				result.delivered.gold = reward.gold;
-			}
-			else
-			{
-				result.remaining.gold = reward.gold;
-			}
+			const uint64_t capacity = receiver.GoldCapacity();
+			const uint64_t give = reward.gold < capacity ? reward.gold : capacity;
+			if (give > 0)
+				receiver.GiveGold(give);
+			result.delivered.gold = give;
+			result.remaining.gold = reward.gold - give;
 		}
 		return result;
 	}

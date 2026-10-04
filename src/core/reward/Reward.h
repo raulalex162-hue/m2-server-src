@@ -44,7 +44,8 @@ namespace core::reward
 		virtual ~IReceiver() = default;
 		virtual bool CanReceiveItem(const Item& item) = 0;
 		virtual void GiveItem(const Item& item) = 0;
-		virtual bool CanReceiveGold(uint64_t gold) = 0;
+		// Cat yang mai poate primi jucatorul pana la limita (0 = deloc).
+		virtual uint64_t GoldCapacity() = 0;
 		virtual void GiveGold(uint64_t gold) = 0;
 	};
 
@@ -55,6 +56,8 @@ namespace core::reward
 	};
 
 	// Da tot ce incape, in ordine; intoarce ce s-a dat si ce a ramas.
+	// Itemele se dau intregi (un item cu count <= 200 ocupa cel mult o celula); yang-ul se da
+	// pana la limita jucatorului, iar diferenta ramane.
 	Delivery Deliver(IReceiver& receiver, const Reward& reward);
 
 	// O recompensa in asteptare in cutie.
