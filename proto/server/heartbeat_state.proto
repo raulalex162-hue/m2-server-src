@@ -1,0 +1,15 @@
+// Starea per jucator a sistemului heartbeat, salvata prin PlayerSystemData.
+// Doar pe server; se salveaza ca blob sub m2::SYSTEM_HEARTBEAT.
+// Campurile noi se adauga cu numere noi; numerele existente nu se schimba si nu se refolosesc.
+syntax = "proto3";
+
+package m2.server.heartbeat;
+
+option optimize_for = LITE_RUNTIME;
+
+message State
+{
+	uint64 total_pings = 1;  // Ping-uri acceptate, de la primul login
+	uint64 last_ping_ms = 2; // ora serverului la ultimul Ping acceptat
+	uint32 entries = 3;      // de cate ori a intrat pe un core (login, warp, schimbare de channel)
+}

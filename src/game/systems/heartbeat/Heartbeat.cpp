@@ -10,6 +10,7 @@
 #include "core/events/GameEvents.h"
 
 #include "../../services/NetMessages.h"
+#include "../../services/PlayerData.h"
 
 #include "m2/ProtocolHash.h"
 
@@ -17,6 +18,7 @@
 #include "ProtoBegin.h"
 #include "m2/heartbeat.pb.h"
 #include "m2/system_ids.pb.h"
+#include "server/heartbeat_state.pb.h"
 #include "ProtoEnd.h"
 
 namespace game::systems::heartbeat
@@ -54,6 +56,19 @@ namespace game::systems::heartbeat
 					Log().Info(ctx, "recv LeaveGame map={}", e.mapIndex);
 			});
 
+		bus.Subscribe<core::events::SystemDataReady>("heartbeat",
+			[this](const core::events::SystemDataReady& e, const core::log::Ctx& ctx) {
+				m2::server::heartbeat::State state;
+				if (!game::playerdata::Load(e.pid, m2::SYSTEM_HEARTBEAT, state))
+				{
+					Log().Error(ctx, "datele salvate nu se pot citi");
+					return;
+				}
+				state.set_entries(state.entries() + 1);
+				game::playerdata::Store(e.pid, m2::SYSTEM_HEARTBEAT, state);
+				Log().Info(ctx, "date incarcate: total_pings={} entries={}", state.total_pings(), state.entries());
+			});
+
 		bus.Subscribe<core::events::MobKill>("heartbeat",
 			[this](const core::events::MobKill& e, const core::log::Ctx& ctx) {
 				Log().Debug(ctx, "recv MobKill vnum={} level={} dungeon={}", e.mobVnum, e.mobLevel, e.inDungeon);
@@ -76,6 +91,16 @@ namespace game::systems::heartbeat
 				}
 				m_lastPing[pid] = now;
 				++m_pings;
+
+				// Starea salvata a jucatorului: daca datele inca n-au sosit, Ping-ul e raspuns, dar nu e numarat.
+				m2::server::heartbeat::State state;
+				if (game::playerdata::Load(pid, m2::SYSTEM_HEARTBEAT, state))
+				{
+					state.set_total_pings(state.total_pings() + 1);
+					state.set_last_ping_ms(NowMs());
+					game::playerdata::Store(pid, m2::SYSTEM_HEARTBEAT, state);
+					Log().Debug(ctx, "total_pings={}", state.total_pings());
+				}
 
 				const bool protocolOk = ping.protocol_hash() == m2::kProtocolHash;
 				if (!protocolOk)
