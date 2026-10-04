@@ -85,6 +85,7 @@ ACMD(do_sysreload);
 ACMD(do_sysdebug);
 ACMD(do_reward);      // services/RewardCommands.cpp
 ACMD(do_reward_test);
+ACMD(do_daily_test);  // systems/daily_reward/DailyRewardCommands.cpp
 ACMD(do_war);
 ACMD(do_nowar);
 ACMD(do_setskill);
@@ -350,6 +351,7 @@ struct command_info cmd_info[] =
 	{ "sysdebug",		do_sysdebug,	0,			POS_DEAD,	GM_IMPLEMENTOR	},
 	{ "reward",			do_reward,			0,			POS_DEAD,	GM_PLAYER		},
 	{ "reward_test",		do_reward_test,		0,			POS_DEAD,	GM_IMPLEMENTOR	},
+	{ "daily_test",		do_daily_test,		0,			POS_DEAD,	GM_IMPLEMENTOR	},
 	{ "cooltime",	do_cooltime,		0,			POS_DEAD,	GM_HIGH_WIZARD	},
 
 	{ "gwlist",		do_gwlist,		0,			POS_DEAD,	GM_LOW_WIZARD	},

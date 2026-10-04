@@ -1,0 +1,14 @@
+// Starea per jucator a daily_reward, salvata prin PlayerSystemData sub m2::SYSTEM_DAILY_REWARD.
+syntax = "proto3";
+
+package m2.server.daily_reward;
+
+option optimize_for = LITE_RUNTIME;
+
+message State
+{
+	int64 last_claim_day = 1; // core::time::DayKey; -1 = niciodata (0 implicit e interpretat tot ca "niciodata")
+	uint32 streak = 2;
+	uint32 total_claims = 3;
+	bool claimed_ever = 4;    // diferentiaza "niciodata" de ziua 0 (1970-01-01)
+}

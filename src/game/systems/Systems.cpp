@@ -12,6 +12,7 @@
 #include "../services/GameTime.h"
 #include "../services/PlayerData.h"
 #include "../services/Reward.h"
+#include "daily_reward/DailyReward.h"
 #include "heartbeat/Heartbeat.h"
 
 namespace game::systems
@@ -28,6 +29,7 @@ namespace game::systems
 			registry.Register(game::gametime::CreateSystem());
 			registry.Register(game::playerdata::CreateSystem());
 			registry.Register(game::reward::CreateSystem());
+			registry.Register(std::make_unique<daily_reward::DailyReward>());
 			registry.Register(std::make_unique<heartbeat::Heartbeat>());
 		}
 	}

@@ -1,0 +1,57 @@
+// daily_reward: recompensa zilnica (ciclu de N zile, o revendicare pe zi de joc).
+syntax = "proto3";
+
+package m2.daily_reward;
+
+option optimize_for = LITE_RUNTIME;
+
+// Valoarea "type" din pachetul SYSTEM pentru acest sistem.
+enum MessageType
+{
+	MESSAGE_UNSPECIFIED = 0;
+	OPEN = 1;         // client -> server: trimite-mi starea (la deschiderea ferestrei)
+	CLAIM = 2;        // client -> server: revendic recompensa de azi
+	STATE = 3;        // server -> client: starea completa
+	CLAIM_RESULT = 4; // server -> client: rezultatul revendicarii
+}
+
+message Open {}
+
+message Claim {}
+
+message RewardItem
+{
+	uint32 vnum = 1;
+	uint32 count = 2;
+}
+
+message Day
+{
+	uint32 index = 1; // 1..N
+	repeated RewardItem items = 2;
+	uint64 gold = 3;
+}
+
+message State
+{
+	repeated Day days = 1;
+	uint32 current_day = 2;     // ziua care se revendica azi (sau care s-a revendicat azi)
+	bool can_claim = 3;
+	bool claimed_today = 4;
+	bool streak_broken = 5;     // a ratat o zi: seria a reinceput
+	uint32 streak = 6;
+	int64 next_reset_unix = 7;  // cand incepe urmatoarea zi de joc
+	int64 server_time_unix = 8; // ca clientul sa calculeze corect "peste X ore"
+	uint32 min_level = 9;
+	bool level_too_low = 10;
+	bool auto_open = 11;        // deschide fereastra (trimis la login, cand poate revendica)
+}
+
+message ClaimResult
+{
+	bool ok = 1;
+	string reason = 2;           // daca ok = false: already_claimed_today, level_too_low, reward_rejected, ...
+	uint32 claimed_day = 3;
+	bool queued_to_mailbox = 4;  // o parte a ajuns in cutia de recompense (inventar plin)
+	State state = 5;
+}
