@@ -9,6 +9,7 @@
 #include "core/log/Log.h"
 #include "core/registry/Registry.h"
 
+#include "../services/GameTime.h"
 #include "../services/PlayerData.h"
 #include "../services/Reward.h"
 #include "heartbeat/Heartbeat.h"
@@ -22,8 +23,9 @@ namespace game::systems
 		void RegisterAll(core::registry::Registry& registry)
 		{
 			// Ordinea de pornire. Fiecare sistem nou se adauga aici, cu o linie.
-			// player_data e primul: porneste inaintea sistemelor care il folosesc si se opreste
-			// dupa ele, deci salveaza si ce au scris ele la oprire.
+			// Serviciile intai: pornesc inaintea sistemelor care le folosesc si se opresc dupa ele.
+			// game_time: ceasul si ziua de joc. player_data: salveaza la oprire si ce au scris sistemele.
+			registry.Register(game::gametime::CreateSystem());
 			registry.Register(game::playerdata::CreateSystem());
 			registry.Register(game::reward::CreateSystem());
 			registry.Register(std::make_unique<heartbeat::Heartbeat>());

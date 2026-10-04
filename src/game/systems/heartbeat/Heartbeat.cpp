@@ -8,8 +8,11 @@
 
 #include "core/events/Bus.h"
 #include "core/events/GameEvents.h"
+#include "core/scheduler/Scheduler.h"
+#include "core/time/Calendar.h"
 
 #include "../../services/NetMessages.h"
+#include "../../services/GameTime.h"
 #include "../../services/PlayerData.h"
 
 #include "m2/ProtocolHash.h"
@@ -116,6 +119,15 @@ namespace game::systems::heartbeat
 				Log().Debug(ctx, "recv Ping -> send Pong protocol_ok={} sent={}", protocolOk, sent);
 			},
 			256);
+
+		// Sarcini de test pentru planificator: una la fiecare minut, una la inceputul fiecarei zile de joc.
+		auto& scheduler = core::scheduler::Global();
+		scheduler.Every("heartbeat", 60, [this](const core::log::Ctx& ctx) {
+			Log().Debug(ctx, "tick (scheduler): pings={} jucatori cu Ping recent={}", m_pings, m_lastPing.size());
+		});
+		scheduler.DailyAt("heartbeat", game::gametime::DayResetMinute(), [this](const core::log::Ctx& ctx) {
+			Log().Info(ctx, "zi noua de joc: {}", core::time::FormatDayKey(game::gametime::DayKeyNow()));
+		});
 
 		Log().Info(LifecycleCtx(), "pornit: log_enter_leave={} min_ping_interval_ms={} protocol={}",
 			Config().logEnterLeave, Config().minPingIntervalMs, m2::kProtocolHash);
