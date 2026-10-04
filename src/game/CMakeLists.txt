@@ -12,6 +12,7 @@ target_link_libraries(game
 	libthecore
 	liblua
 	m2core
+	m2proto
 
 	# external
 	mariadbclient
