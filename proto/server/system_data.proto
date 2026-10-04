@@ -1,0 +1,46 @@
+// Mesajele interne game <-> db pentru datele per jucator ale sistemelor (PlayerSystemData).
+// NU fac parte din protocolul cu clientul: nu intra in hash-ul protocolului si nu se copiaza in client.
+syntax = "proto3";
+
+package m2.server.storage;
+
+option optimize_for = LITE_RUNTIME;
+
+// Datele unui sistem pentru un jucator. data gol = sterge.
+message Entry
+{
+	uint32 system_id = 1;
+	bytes data = 2;
+}
+
+// game -> db: trimite-mi toate datele jucatorului.
+message LoadRequest
+{
+	uint32 pid = 1;
+}
+
+// db -> game: datele cerute. ok = false: citirea din DB a esuat (game nu scrie nimic pentru acest jucator).
+message LoadResponse
+{
+	uint32 pid = 1;
+	bool ok = 2;
+	repeated Entry entries = 3;
+}
+
+// game -> db: sistemele modificate ale jucatorului.
+message Save
+{
+	uint32 pid = 1;
+	repeated Entry entries = 2;
+}
+
+// Plicul transportat de GD::SYSTEM_DATA / DG::SYSTEM_DATA.
+message Envelope
+{
+	oneof body
+	{
+		LoadRequest load_request = 1;
+		LoadResponse load_response = 2;
+		Save save = 3;
+	}
+}
