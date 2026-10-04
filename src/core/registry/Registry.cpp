@@ -2,6 +2,7 @@
 
 #include "core/events/Bus.h"
 #include "core/net/Router.h"
+#include "core/scheduler/Scheduler.h"
 
 namespace core::registry
 {
@@ -141,9 +142,10 @@ namespace core::registry
 	void Registry::StopEntry(Entry& entry, const log::Ctx& ctx)
 	{
 		entry.system->Stop(ctx);
-		// Un sistem oprit nu mai primeste evenimente si mesaje, chiar daca a uitat sa se dezaboneze.
+		// Un sistem oprit nu mai primeste evenimente, mesaje si sarcini, chiar daca a uitat sa se dezaboneze.
 		events::Global().UnsubscribeOwner(entry.status.name);
 		net::Global().UnregisterOwner(entry.status.name);
+		scheduler::Global().CancelOwner(entry.status.name);
 		entry.status.state = State::Disabled;
 		RegistryLog().Info(ctx, "stop {}", entry.status.name);
 	}
