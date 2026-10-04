@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "systems/Systems.h"
 #include "constants.h"
 #include "config.h"
 #include "event.h"
@@ -363,6 +364,8 @@ int main(int argc, char **argv)
 	Blend_Item_init();
 	ani_init();
 
+	game::systems::StartAll();
+
 	while (idle());
 
 	sys_log(0, "<shutdown> Starting...");
@@ -400,6 +403,7 @@ int main(int argc, char **argv)
 
 	sys_log(0, "<shutdown> Shutting down CHARACTER_MANAGER...");
 	char_manager.GracefulShutdown();
+	game::systems::StopAll();
 	sys_log(0, "<shutdown> Shutting down ITEM_MANAGER...");
 	item_manager.GracefulShutdown();
 
