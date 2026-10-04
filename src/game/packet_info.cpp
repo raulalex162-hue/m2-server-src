@@ -93,6 +93,7 @@ void CPacketInfo::Log(const char * c_pszFileName)
 CPacketInfoCG::CPacketInfoCG()
 {
 	Set(CG::TEXT, sizeof(TPacketCGText), "Text");
+	Set(CG::SYSTEM, PACKET_HEADER_SIZE, "System");
 	Set(CG::MARK_LOGIN, sizeof(TPacketCGMarkLogin), "MarkLogin");
 	Set(CG::MARK_IDXLIST, sizeof(TPacketCGMarkIDXList), "MarkIdxList");
 	Set(CG::MARK_CRCLIST, sizeof(TPacketCGMarkCRCList), "MarkCrcList");

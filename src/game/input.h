@@ -144,6 +144,7 @@ class CInputMain : public CInputProcessor
 
 		int HandlePong(LPDESC d, const char* p);
 		int HandleChat(LPDESC d, const char* p);
+		int HandleSystem(LPDESC d, const char* p); // services/NetTransport.cpp
 		int HandleWhisper(LPDESC d, const char* p);
 		int HandleMove(LPDESC d, const char* p);
 		int HandleAttack(LPDESC d, const char* p);

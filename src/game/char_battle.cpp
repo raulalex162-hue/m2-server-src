@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "services/EventPublish.h"
 #include "utils.h"
 #include "config.h"
 #include "desc.h"
@@ -795,6 +796,7 @@ void CHARACTER::Reward(bool bItemDrop)
 
 		pkAttacker->SetQuestNPCID(GetVID());
 		quest::CQuestManager::instance().Kill(pkAttacker->GetPlayerID(), GetRaceNum());
+		game::events::PublishMobKill(pkAttacker, this);
 		CHARACTER_MANAGER::instance().KillLog(GetRaceNum());
 
 		if (!number(0, 9))

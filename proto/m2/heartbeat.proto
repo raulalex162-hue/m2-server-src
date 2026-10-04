@@ -1,0 +1,29 @@
+// Sistemul-martor heartbeat: verifica drumul complet client -> server -> client
+// si ca fisierele .proto din client si server sunt aceleasi.
+syntax = "proto3";
+
+package m2.heartbeat;
+
+option optimize_for = LITE_RUNTIME;
+
+// Valoarea "type" din pachetul SYSTEM pentru acest sistem.
+enum MessageType
+{
+	MESSAGE_UNSPECIFIED = 0;
+	PING = 1; // client -> server
+	PONG = 2; // server -> client
+}
+
+message Ping
+{
+	uint64 client_time_ms = 1; // ora clientului la trimitere, intoarsa in Pong
+	string protocol_hash = 2;  // m2::kProtocolHash din client
+}
+
+message Pong
+{
+	uint64 client_time_ms = 1;       // copiat din Ping, pentru masurarea latentei
+	uint64 server_time_ms = 2;
+	bool protocol_ok = 3;            // hash-ul clientului e identic cu al serverului
+	string server_protocol_hash = 4;
+}

@@ -1,0 +1,13 @@
+// Identificatorii sistemelor in pachetul SYSTEM: [system:2][type:2][mesaj].
+// Fiecare sistem nou primeste aici un numar unic, care nu se mai schimba niciodata.
+syntax = "proto3";
+
+package m2;
+
+option optimize_for = LITE_RUNTIME;
+
+enum SystemId
+{
+	SYSTEM_UNSPECIFIED = 0;
+	SYSTEM_HEARTBEAT = 1;
+}

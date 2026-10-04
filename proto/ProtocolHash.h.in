@@ -1,0 +1,8 @@
+#pragma once
+// Generat de CMake din continutul fisierelor .proto. NU edita.
+// Clientul si serverul trebuie sa aiba aceeasi valoare; altfel fisierele .proto difera.
+
+namespace m2
+{
+	inline constexpr const char* kProtocolHash = "@M2_PROTOCOL_HASH@";
+}
