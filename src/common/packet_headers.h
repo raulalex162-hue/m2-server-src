@@ -135,6 +135,7 @@ namespace CG
     constexpr uint16_t MARK_CRCLIST       = 0x0C02;
     constexpr uint16_t MARK_UPLOAD        = 0x0C03;
     constexpr uint16_t MARK_IDXLIST       = 0x0C04;
+    constexpr uint16_t SYSTEM             = 0x0C80; // mesajele sistemelor noi (core/net)
 }
 
 // ============================================================================
@@ -280,6 +281,7 @@ namespace GC
     constexpr uint16_t MARK_BLOCK         = 0x0C10;
     constexpr uint16_t MARK_IDXLIST       = 0x0C11;
     constexpr uint16_t MARK_DIFF_DATA     = 0x0C12;
+    constexpr uint16_t SYSTEM             = 0x0C80; // mesajele sistemelor noi (core/net)
 }
 
 // ============================================================================

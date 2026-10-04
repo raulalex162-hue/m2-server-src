@@ -3377,6 +3377,7 @@ void CInputMain::RegisterHandlers()
 
 	// Variable-length (custom adapters)
 	reg(CG::CHAT,              &CInputMain::HandleChat);
+	reg(CG::SYSTEM,            &CInputMain::HandleSystem);
 	reg(CG::WHISPER,           &CInputMain::HandleWhisper);
 	reg(CG::SHOP,              &CInputMain::HandleShop);
 	reg(CG::MESSENGER,         &CInputMain::HandleMessenger);
